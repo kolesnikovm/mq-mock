@@ -1,0 +1,4 @@
+pool: users.csv
+searchConfig:
+  port: 9093
+  path: /search
