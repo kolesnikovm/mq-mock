@@ -46,6 +46,13 @@ public abstract class AbstractMock implements Runnable {
             .quantile(0.9, 0.01)
             .maxAgeSeconds(10)
             .register();
+    public static final Summary producerTime = Summary.build()
+            .name("producer_time")
+            .help("Handler processing time.")
+            .labelNames("mock", "host", "handler")
+            .quantile(0.9, 0.01)
+            .maxAgeSeconds(10)
+            .register();
 
     public AbstractMock(String[] args) {
         parseOptions(args);

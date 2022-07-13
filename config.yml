@@ -1,4 +1,20 @@
-pool: users.csv
-searchConfig:
-  port: 9093
-  path: /search
+mqConfig:
+  host: localhost
+  port: 1414
+  channel: DEV.ADMIN.SVRCONN
+  queueManager: QM1
+  login: admin
+  password: passw0rd
+services:
+  - name: search
+    requestQueue: DEV.QUEUE.1
+    responseQueue: DEV.QUEUE.2
+    responseDelay: 5000
+    consumerThreads: 5
+    producerThreads: 1
+  - name: create
+    requestQueue: DEV.QUEUE.3
+    responseQueue: DEV.QUEUE.4
+    responseDelay: 5000
+    consumerThreads: 1
+    producerThreads: 1

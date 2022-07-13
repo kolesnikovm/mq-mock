@@ -1,25 +1,25 @@
 package config;
 
+import java.util.List;
+
 public class Config {
 
-    private String pool;
-    private SearchConfig searchConfig;
+    private MQConfig mqConfig;
+    private List<Service> services;
 
-
-    public String getPool() {
-        return pool;
+    public MQConfig getMqConfig() {
+        return mqConfig;
     }
 
-    public void setPool(String pool) {
-        this.pool = pool;
+    public void setMqConfig(MQConfig mqConfig) {
+        this.mqConfig = mqConfig;
     }
 
-    public SearchConfig getSearchConfig() {
-        return searchConfig;
+    public List<Service> getServices() {
+        return services;
     }
 
-    public void setSearchConfig(SearchConfig searchConfig) {
-        this.searchConfig = searchConfig;
+    public void setServices(List<Service> services) {
+        this.services = services;
     }
-
 }
