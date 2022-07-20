@@ -1,4 +1,6 @@
-import config.Config;
+package com.github.kolesnikovm;
+
+import com.github.kolesnikovm.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;

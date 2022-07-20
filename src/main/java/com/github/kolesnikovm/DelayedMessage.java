@@ -1,3 +1,5 @@
+package com.github.kolesnikovm;
+
 import com.google.common.primitives.Ints;
 
 import javax.jms.Message;

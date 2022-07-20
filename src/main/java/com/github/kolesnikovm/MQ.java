@@ -1,3 +1,5 @@
+package com.github.kolesnikovm;
+
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.jms.JmsQueue;

@@ -1,3 +1,5 @@
+package com.github.kolesnikovm;
+
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Summary;
 import io.prometheus.client.exporter.HTTPServer;
@@ -40,18 +42,30 @@ public abstract class AbstractMock implements Runnable {
             .labelNames("mock", "host")
             .register();
     public static final Summary handlingTime = Summary.build()
-            .name("handling_time")
+            .name("mock_handling_time")
             .help("Handler processing time.")
             .labelNames("mock", "host", "handler")
             .quantile(0.9, 0.01)
             .maxAgeSeconds(10)
             .register();
-    public static final Summary producerTime = Summary.build()
-            .name("producer_time")
-            .help("Handler processing time.")
-            .labelNames("mock", "host", "handler")
+    public static final Summary consumeTime = Summary.build()
+            .name("mock_consume_time")
+            .help("Message consume time.")
+            .labelNames("mock", "host", "handler", "status")
             .quantile(0.9, 0.01)
             .maxAgeSeconds(10)
+            .register();
+    public static final Summary produceTime = Summary.build()
+            .name("mock_produce_time")
+            .help("Message produce time.")
+            .labelNames("mock", "host", "handler", "status")
+            .quantile(0.9, 0.01)
+            .maxAgeSeconds(10)
+            .register();
+    static final Gauge threads = Gauge.build()
+            .name("mock_threads")
+            .help("Mock threads.")
+            .labelNames("mock", "host", "type")
             .register();
 
     public AbstractMock(String[] args) {
@@ -90,7 +104,7 @@ public abstract class AbstractMock implements Runnable {
     @Override
     public void run() {
         double now = System.currentTimeMillis();
-        uptime.labels(SampleMock.mockName, ip).set(now - startTime);
+        uptime.labels(Mock.mockName, ip).set(now - startTime);
     }
 
     static void parseOptions(String[] args) {

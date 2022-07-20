@@ -1,4 +1,4 @@
-package config;
+package com.github.kolesnikovm.config;
 
 public class MQConfig {
 

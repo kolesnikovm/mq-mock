@@ -9,7 +9,7 @@ services:
   - name: search
     requestQueue: DEV.QUEUE.1
     responseQueue: DEV.QUEUE.2
-    responseDelay: 5000
+    responseDelay: 1000
     consumerThreads: 5
     producerThreads: 1
   - name: create

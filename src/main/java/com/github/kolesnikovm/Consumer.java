@@ -1,4 +1,5 @@
-import config.Config;
+package com.github.kolesnikovm;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,52 +8,53 @@ import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
 
-public class CreateHandler implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(CreateHandler.class);
+public class Consumer implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(Consumer.class);
 
     private Session session;
     private MessageConsumer consumer;
-    private Message message;
     private BlockingQueue<DelayedMessage> delayQueue;
-    private Random r = new Random();
+    private Handler handler;
 
-    public CreateHandler(Session session, MessageConsumer consumer, BlockingQueue delayQueue) {
-        log.debug("Creating new CreateHandler");
+    private Message message, response;
+    private Random r = new Random();
+    private long consumeStart, consumeStop;
+    private long delay;
+
+
+    public Consumer(Session session, MessageConsumer consumer, BlockingQueue delayQueue, Handler handler, long delay) {
+        log.debug("Creating new consumer");
 
         this.session = session;
         this.consumer = consumer;
         this.delayQueue = delayQueue;
+        this.handler = handler;
+        this.delay = delay;
     }
 
     @Override
     public void run() {
-        log.debug("Running CreateHandler");
+        log.debug("Running consumer");
 
         while (true) {
             long start = System.currentTimeMillis();
 
             try {
+                consumeStart = System.currentTimeMillis();
                 message = consumer.receiveNoWait();
+                consumeStop = System.currentTimeMillis();
+
+                Mock.consumeTime.labels(Mock.mockName, AbstractMock.ip, this.getClass().getName(), "PASS").observe(consumeStop - consumeStart);
             } catch (JMSException e) {
+                consumeStop = System.currentTimeMillis();
+                Mock.consumeTime.labels(Mock.mockName, AbstractMock.ip, this.getClass().getName(), "FAIL").observe(consumeStop - consumeStart);
+
                 log.error("Failed to receive message");
                 e.printStackTrace();
-                System.exit(-1);
             }
 
             if (message != null) {
-//                long start = System.currentTimeMillis();
-
-                Message response = null;
-                try {
-                    response = session.createTextMessage("======");
-                    response.setJMSCorrelationID(message.getJMSCorrelationID());
-                    response.setStringProperty("src_systemID", "RKK2");
-                    response.setStringProperty("version", "2");
-                } catch (JMSException e) {
-                    log.error("Failed to create response message");
-                    e.printStackTrace();
-                    System.exit(-1);
-                }
+                response = handler.createResponse(message, session);
 
                 DelayedMessage delayedMessage = new DelayedMessage(response, getDelay());
                 try {
@@ -61,18 +63,16 @@ public class CreateHandler implements Runnable {
                 } catch (InterruptedException e) {
                     log.error("Failed to send response to delayed queue");
                     e.printStackTrace();
-                    System.exit(-1);
                 }
 
                 long stop = System.currentTimeMillis();
-                SampleMock.handlingTime.labels(SampleMock.mockName, AbstractMock.ip, this.getClass().getName()).observe(stop - start);
+                Mock.handlingTime.labels(Mock.mockName, AbstractMock.ip, this.getClass().getName()).observe(stop - start);
             }
         }
     }
 
     private long getDelay() {
-        // todo add delay from config
-        long d = Math.round(r.nextGaussian()*1000 + 5000);
+        long d = Math.round(r.nextGaussian()*1000 + delay);
         if (d < 0) {
             d *= -1;
         }
