@@ -3,6 +3,7 @@ package com.github.kolesnikovm;
 import com.github.kolesnikovm.config.Config;
 import com.github.kolesnikovm.config.Service;
 import com.github.kolesnikovm.handlers.Create;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import java.util.HashMap;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.DelayQueue;
 
@@ -18,7 +21,7 @@ public class Mock extends AbstractMock {
     private static final Logger log = LoggerFactory.getLogger(Mock.class);
 
     private static Config config;
-    private static HashMap<String, Class> classesMap = new HashMap<>();
+    private static Set<Class<?>> handlerClasses;
 
     // Mock name for metrics label
     public static String mockName = "Sample Mock";
@@ -35,7 +38,8 @@ public class Mock extends AbstractMock {
 
         config = ConfigFactory.getConfig();
 
-        registerHandlers();
+        Reflections reflections = new Reflections("com.github.kolesnikovm.handlers");
+        handlerClasses = reflections.getTypesAnnotatedWith(Method.class);
 
         MQ mq = new MQ(config.getMqConfig().getHost(),
                 config.getMqConfig().getPort(),
@@ -47,7 +51,14 @@ public class Mock extends AbstractMock {
         for (Service service : config.getServices()) {
             log.info("Starting handler for {}", service.getName());
 
-            Class c = classesMap.get(service.getName());
+            Class c = null;
+            for (Class<?> handlerClass : handlerClasses) {
+                if (handlerClass.getAnnotation(Method.class).name().equals(service.getName())) {
+                    c = handlerClass;
+                    break;
+                }
+            }
+
             if (c == null) {
                 log.warn("No handler for {}", service.getName());
                 continue;
@@ -86,8 +97,4 @@ public class Mock extends AbstractMock {
         while (keepRunning) {}
     }
 
-    private static void registerHandlers() {
-        classesMap.put("create", Create.class);
-        classesMap.put("search", Create.class);
-    }
 }

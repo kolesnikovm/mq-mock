@@ -1,8 +1,7 @@
 package com.github.kolesnikovm.handlers;
 
-import com.github.kolesnikovm.Consumer;
 import com.github.kolesnikovm.Handler;
-import com.github.kolesnikovm.config.Service;
+import com.github.kolesnikovm.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+@Method(name="create")
 public class Create implements Handler {
     private static final Logger log = LoggerFactory.getLogger(Create.class);
 
